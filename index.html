@@ -3,30 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DRE Lynkz - Nuvem</title>
+    <title>DRE Lynkz matriz</title>
     <!-- Bibliotecas para exportar Excel e PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 25px; background-color: #f1f5f9; color: #1e293b; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 25px; background-color: #f8fafc; color: #1e293b; }
         
-        .header-container { background: #0f172a; color: white; padding: 20px 25px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .header-container { background: #1e293b; color: white; padding: 20px 25px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         h2 { margin: 0; font-size: 20px; font-weight: 600; }
         p { margin: 5px 0 0 0; color: #94a3b8; font-size: 13px; }
         
         .acoes { display: flex; gap: 10px; }
         button { padding: 9px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; transition: opacity 0.2s; }
         button:hover { opacity: 0.9; }
-        .btn-novo { background-color: #10b981; color: white; }
+        .btn-novo { background-color: #2563eb; color: white; }
         .btn-excel { background-color: #059669; color: white; }
-        .btn-pdf { background-color: #e11d48; color: white; }
+        .btn-pdf { background-color: #dc2626; color: white; }
 
         .table-container { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow-x: auto; border: 1px solid #e2e8f0; }
         table { width: 100%; border-collapse: collapse; white-space: nowrap; font-size: 12px; }
         th, td { border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9; padding: 10px 12px; text-align: right; }
         th:first-child, td:first-child { text-align: left; position: sticky; left: 0; background: inherit; z-index: 1; border-right: 2px solid #e2e8f0; }
-        th { background-color: #1e293b; color: white; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+        th { background-color: #0f172a; color: white; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
 
         /* Estilos das Linhas da DRE */
         tr:hover td { background-color: #f8fafc; }
