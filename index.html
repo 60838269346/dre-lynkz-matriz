@@ -9,36 +9,57 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f6f9; color: #333; }
-        h2 { color: #1a73e8; }
-        .acoes { margin-bottom: 20px; display: flex; gap: 10px; }
-        button { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        .btn-excel { background-color: #2e7d32; color: white; }
-        .btn-pdf { background-color: #c62828; color: white; }
-        .btn-novo { background-color: #1976d2; color: white; }
-        table { width: 100%; border-collapse: collapse; background: white; margin-top: 10px; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
-        th:first-child, td:first-child { text-align: left; }
-        th { background-color: #1a73e8; color: white; }
-        .total-row { font-weight: bold; background-color: #e3f2fd; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 25px; background-color: #f1f5f9; color: #1e293b; }
+        
+        .header-container { background: #0f172a; color: white; padding: 20px 25px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        h2 { margin: 0; font-size: 20px; font-weight: 600; }
+        p { margin: 5px 0 0 0; color: #94a3b8; font-size: 13px; }
+        
+        .acoes { display: flex; gap: 10px; }
+        button { padding: 9px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; transition: opacity 0.2s; }
+        button:hover { opacity: 0.9; }
+        .btn-novo { background-color: #10b981; color: white; }
+        .btn-excel { background-color: #059669; color: white; }
+        .btn-pdf { background-color: #e11d48; color: white; }
+
+        .table-container { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow-x: auto; border: 1px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; white-space: nowrap; font-size: 12px; }
+        th, td { border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9; padding: 10px 12px; text-align: right; }
+        th:first-child, td:first-child { text-align: left; position: sticky; left: 0; background: inherit; z-index: 1; border-right: 2px solid #e2e8f0; }
+        th { background-color: #1e293b; color: white; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Estilos das Linhas da DRE */
+        tr:hover td { background-color: #f8fafc; }
+        .linha-principal { font-weight: bold; background-color: #f8fafc; color: #0f172a; }
+        .linha-resultado { font-weight: bold; background-color: #e0f2fe; color: #0369a1; font-size: 13px; }
+        .sub-item td:first-child { padding-left: 25px; color: #475569; font-style: italic; }
+
         /* Modal */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 400px; }
-        .modal-content input, .modal-content select { width: 100%; padding: 8px; margin: 8px 0; box-sizing: border-box; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 25px; border-radius: 10px; width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .modal-content h3 { margin-top: 0; color: #0f172a; }
+        .modal-content label { display: block; margin-top: 12px; font-weight: 600; font-size: 13px; color: #475569; }
+        .modal-content input, .modal-content select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-buttons button { flex: 1; justify-content: center; }
+        .btn-cancelar { background-color: #e2e8f0; color: #475569; }
     </style>
 </head>
 <body>
 
-    <h2>DRE Lynkz - Departamento Único (Nuvem)</h2>
-    <p>Visão Mensal, Análise Vertical e Acumulado Anual</p>
-
-    <div class="acoes">
-        <button class="btn-novo" onclick="abrirModal()">+ Novo Lançamento</button>
-        <button class="btn-excel" onclick="baixarExcel()">Baixar Excel</button>
-        <button class="btn-pdf" onclick="baixarPDF()">Baixar PDF</button>
+    <div class="header-container">
+        <div>
+            <h2>DRE Lynkz - Nuvem</h2>
+            <p>Visão Mensal, Análise Vertical e Acumulado Anual</p>
+        </div>
+        <div class="acoes">
+            <button class="btn-novo" onclick="abrirModal()">+ Novo Lançamento</button>
+            <button class="btn-excel" onclick="baixarExcel()">Baixar Excel</button>
+            <button class="btn-pdf" onclick="baixarPDF()">Baixar PDF</button>
+        </div>
     </div>
 
-    <div style="overflow-x:auto;">
+    <div class="table-container">
         <table id="tabela-dre">
             <thead>
                 <tr>
@@ -86,13 +107,14 @@
             </select>
             <label>Valor (R$):</label>
             <input type="number" id="lanc-valor" step="0.01" placeholder="0.00">
-            <button class="btn-novo" onclick="salvarLancamento()">Salvar</button>
-            <button onclick="fecharModal()" style="background:#aaa; color:white; margin-top:5px;">Cancelar</button>
+            <div class="modal-buttons">
+                <button class="btn-novo" onclick="salvarLancamento()">Salvar</button>
+                <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // CONFIGURAÇÃO DA NUVEM (JSONBin)
         const BIN_ID = "6a6a4655f5f4af5e29d25a5c"; 
         const API_KEY = "$2a$10$2gRuysiXM85zMZ4OTG2dU.AEaN0WyPHJveZ2wy62/tqidY73EOJBS"; 
 
@@ -147,35 +169,35 @@
             let tbody = document.getElementById("corpo-dre");
             tbody.innerHTML = "";
 
-            let linhaRB = calcularLinha("Receita Bruta Total", matriz.receita_bruta, matriz.receita_bruta, true);
+            let linhaRB = calcularLinha("Receita Bruta Total", matriz.receita_bruta, matriz.receita_bruta, 'linha-principal');
             let linhaImp = calcularLinha("(-) Impostos sobre Vendas", matriz.impostos, matriz.receita_bruta);
             
             let receitaLiquida = Array(12).fill(0);
             for(let i=0; i<12; i++) receitaLiquida[i] = matriz.receita_bruta[i] - matriz.impostos[i];
-            let linhaRL = calcularLinha("(=) Receita Líquida", receitaLiquida, receitaLiquida, true, true);
+            let linhaRL = calcularLinha("(=) Receita Líquida", receitaLiquida, receitaLiquida, 'linha-resultado');
 
             let linhaCMV = calcularLinha("(-) Custo das Mercadorias Vendidas (CMV)", matriz.cmv, receitaLiquida);
             
             let lucroBruto = Array(12).fill(0);
             for(let i=0; i<12; i++) lucroBruto[i] = receitaLiquida[i] - matriz.cmv[i];
-            let linhaLB = calcularLinha("(=) Lucro Bruto", lucroBruto, receitaLiquida, true, true);
+            let linhaLB = calcularLinha("(=) Lucro Bruto", lucroBruto, receitaLiquida, 'linha-resultado');
 
             let despesasTotal = Array(12).fill(0);
             for(let i=0; i<12; i++) despesasTotal[i] = matriz.pessoal[i] + matriz.comerciais[i] + matriz.administrativas[i];
-            let linhaDesp = calcularLinha("(-) Despesas Operacionais Totais", despesasTotal, receitaLiquida);
-            let linhaP = calcularLinha("• Despesas com Pessoal", matriz.pessoal, receitaLiquida);
-            let linhaC = calcularLinha("• Despesas Comerciais", matriz.comerciais, receitaLiquida);
-            let linhaA = calcularLinha("• Despesas Administrativas", matriz.administrativas, receitaLiquida);
+            let linhaDesp = calcularLinha("(-) Despesas Operacionais Totais", despesasTotal, receitaLiquida, 'linha-principal');
+            let linhaP = calcularLinha("Despesas com Pessoal", matriz.pessoal, receitaLiquida, 'sub-item');
+            let linhaC = calcularLinha("Despesas Comerciais", matriz.comerciais, receitaLiquida, 'sub-item');
+            let linhaA = calcularLinha("Despesas Administrativas", matriz.administrativas, receitaLiquida, 'sub-item');
 
             let ebitda = Array(12).fill(0);
             for(let i=0; i<12; i++) ebitda[i] = lucroBruto[i] - despesasTotal[i];
-            let linhaEbitda = calcularLinha("(=) EBITDA / Resultado Operacional", ebitda, receitaLiquida, true, true);
+            let linhaEbitda = calcularLinha("(=) EBITDA / Resultado Operacional", ebitda, receitaLiquida, 'linha-resultado');
 
             tbody.innerHTML = linhaRB + linhaImp + linhaRL + linhaCMV + linhaLB + linhaDesp + linhaP + linhaC + linhaA + linhaEbitda;
         }
 
-        function calcularLinha(nome, valoresMes, baseAV, isTotal = false, isPrincipal = false) {
-            let html = `<tr class="${isTotal ? 'total-row' : ''}"><td><b>${nome}</b></td>`;
+        function calcularLinha(nome, valoresMes, baseAV, classeCss = '') {
+            let html = `<tr class="${classeCss}"><td>${nome}</td>`;
             let acumulado = 0;
             let baseAcumulada = baseAV.reduce((a,b)=>a+b, 0);
 
@@ -185,12 +207,12 @@
                 let av = baseAV[i] !== 0 ? (val / baseAV[i]) * 100 : 0;
                 
                 html += `<td>${val.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>`;
-                html += `<td>${av.toFixed(2)}%</td>`;
+                html += `<td style="color: #64748b; font-size: 11px;">${av.toFixed(1)}%</td>`;
             }
 
             let avAcum = baseAcumulada !== 0 ? (acumulado / baseAcumulada) * 100 : 0;
             html += `<td><b>${acumulado.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</b></td>`;
-            html += `<td><b>${avAcum.toFixed(2)}%</b></td></tr>`;
+            html += `<td style="color: #64748b; font-size: 11px;"><b>${avAcum.toFixed(1)}%</b></td></tr>`;
             return html;
         }
 
@@ -227,6 +249,3 @@
     </script>
 </body>
 </html>
-     
-          
-         
