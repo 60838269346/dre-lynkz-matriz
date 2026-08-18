@@ -15,6 +15,11 @@
         h2 { margin: 0; font-size: 20px; font-weight: 600; }
         p { margin: 5px 0 0 0; color: #cbd5e1; font-size: 13px; }
         
+        .header-left { display: flex; align-items: center; gap: 20px; }
+        .filtro-ano-container { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 6px; }
+        .filtro-ano-container label { font-size: 13px; font-weight: 600; color: #cbd5e1; }
+        .filtro-ano-container select { background: #1e293b; color: white; border: 1px solid #475569; padding: 5px 10px; border-radius: 4px; font-weight: 600; cursor: pointer; }
+
         .acoes { display: flex; gap: 10px; }
         button { padding: 9px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; transition: opacity 0.2s; }
         button:hover { opacity: 0.9; }
@@ -48,9 +53,19 @@
 <body>
 
     <div class="header-container">
-        <div>
-            <h2>DRE Lynkz - Matriz</h2>
-            <p>Visão Mensal, Análise Vertical e Acumulado Anual</p>
+        <div class="header-left">
+            <div>
+                <h2>DRE Lynkz - Matriz</h2>
+                <p>Visão Mensal, Análise Vertical e Acumulado Anual</p>
+            </div>
+            <div class="filtro-ano-container">
+                <label for="ano-selecionado">Ano:</label>
+                <select id="ano-selecionado" onchange="montarDRE()">
+                    <option value="2026">2026</option>
+                    <option value="2025">2025</option>
+                    <option value="2024">2024</option>
+                </select>
+            </div>
         </div>
         <div class="acoes">
             <button class="btn-novo" onclick="abrirModal()">+ Novo Lançamento</button>
@@ -89,6 +104,12 @@
     <div id="modal-lancamento" class="modal">
         <div class="modal-content">
             <h3>Adicionar Lançamento</h3>
+            <label>Ano:</label>
+            <select id="lanc-ano">
+                <option value="2026">2026</option>
+                <option value="2025">2025</option>
+                <option value="2024">2024</option>
+            </select>
             <label>Mês:</label>
             <select id="lanc-mes">
                 <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
@@ -155,6 +176,7 @@
         }
 
         function montarDRE() {
+            let anoFiltro = document.getElementById("ano-selecionado").value;
             let meses = 12;
             let matriz = {
                 receita_bruta: Array(meses).fill(0),
@@ -171,7 +193,8 @@
             };
 
             dadosLancamentos.forEach(l => {
-                if (matriz[l.grupo] && l.mes >= 0 && l.mes < 12) {
+                let anoLancamento = l.ano ? String(l.ano) : "2026"; // Padrão 2026 para registros antigos sem ano
+                if (anoLancamento === anoFiltro && matriz[l.grupo] && l.mes >= 0 && l.mes < 12) {
                     matriz[l.grupo][l.mes] += Number(l.valor);
                 }
             });
@@ -244,11 +267,12 @@
         function fecharModal() { document.getElementById("modal-lancamento").style.display = "none"; }
 
         async function salvarLancamento() {
+            let ano = document.getElementById("lanc-ano").value;
             let mes = parseInt(document.getElementById("lanc-mes").value);
             let grupo = document.getElementById("lanc-grupo").value;
             let valor = parseFloat(document.getElementById("lanc-valor").value) || 0;
 
-            dadosLancamentos.push({ mes, grupo, valor });
+            dadosLancamentos.push({ ano, mes, grupo, valor });
             await salvarNaNuvem();
             montarDRE();
             fecharModal();
