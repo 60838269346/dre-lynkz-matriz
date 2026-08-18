@@ -23,7 +23,6 @@
         .btn-novo { background-color: #475569; color: white; border: 1px solid #64748b; }
         .btn-excel { background-color: #059669; color: white; }
         .btn-pdf { background-color: #dc2626; color: white; }
-        .btn-excluir { background-color: #ef4444; color: white; padding: 4px 8px; font-size: 11px; }
         .table-container { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow-x: auto; border: 1px solid #e2e8f0; margin-bottom: 30px; }
         table { width: 100%; border-collapse: collapse; white-space: nowrap; font-size: 12px; }
         th, td { border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9; padding: 10px 12px; text-align: right; }
@@ -33,10 +32,6 @@
         .linha-principal { font-weight: bold; background-color: #f8fafc; color: #1e293b; }
         .linha-resultado { font-weight: bold; background-color: #e2e8f0; color: #1e293b; font-size: 13px; }
         .sub-item td:first-child { padding-left: 25px; color: #475569; font-style: italic; }
-        
-        /* Seção de Gerenciamento */
-        .painel-lancamentos { background: white; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .painel-lancamentos h3 { margin-top: 0; font-size: 16px; color: #334155; }
         
         /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); justify-content: center; align-items: center; z-index: 1000; }
@@ -70,27 +65,6 @@
             <button class="btn-novo" onclick="abrirModal()">+ Novo Lançamento</button>
             <button class="btn-excel" onclick="baixarExcel()">Baixar Excel</button>
             <button class="btn-pdf" onclick="baixarPDF()">Baixar PDF</button>
-        </div>
-    </div>
-
-    <!-- Painel para visualização e filtro dos lançamentos já feitos -->
-    <div class="painel-lancamentos">
-        <h3>Lançamentos Registrados</h3>
-        <div class="table-container" style="max-height: 250px; overflow-y: auto; margin-bottom: 0;">
-            <table id="tabela-lancamentos-feitos">
-                <thead>
-                    <tr>
-                        <th style="text-align: left;">Ano</th>
-                        <th style="text-align: left;">Mês</th>
-                        <th style="text-align: left;">Grupo / Conta</th>
-                        <th style="text-align: right;">Valor (R$)</th>
-                        <th style="text-align: center;">Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="corpo-lancamentos-feitos">
-                    <!-- Preenchido via JavaScript -->
-                </tbody>
-            </table>
         </div>
     </div>
 
@@ -157,9 +131,6 @@
             <label>Valor (R$):</label>
             <input type="number" id="lanc-valor" step="0.01" placeholder="0.00">
 
-            <label>Senha de Autorização:</label>
-            <input type="password" id="lanc-senha" placeholder="Digite a senha (0)">
-
             <div class="modal-buttons">
                 <button class="btn-novo" onclick="salvarLancamento()" style="background-color: #334155; color: white;">Salvar</button>
                 <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
@@ -171,20 +142,6 @@
         const BIN_ID = "6a6a4655f5f4af5e29d25a5c";
         const API_KEY = "$2a$10$2gRuysiXM85zMZ4OTG2dU.AEaN0WyPHJveZ2wy62/tqidY73EOJBS";
         let dadosLancamentos = [];
-        const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-        const nomesGrupos = {
-            receita_bruta: "Receita Bruta Total",
-            deducoes_receita: "(-) Deduções da Receita",
-            impostos: "(-) Impostos sobre Vendas",
-            cmv: "(-) Custo das Mercadorias Vendidas (CMV)",
-            verbas_comerciais: "(+) Verbas Comerciais",
-            pessoal: "(-) Despesas com Pessoal",
-            comerciais: "(-) Despesas Comerciais",
-            distribuicao: "(-) Despesas com Distribuição",
-            administrativas: "(-) Despesas Administrativas",
-            tributarias: "(-) Despesas Tributárias",
-            alugueis: "(-) Aluguéis"
-        };
 
         async function carregarDados() {
             try {
@@ -217,41 +174,6 @@
 
         function atualizarInterface() {
             montarDRE();
-            montarTabelaLancamentosFeitos();
-        }
-
-        function montarTabelaLancamentosFeitos() {
-            let anoFiltro = document.getElementById("ano-selecionado").value;
-            let corpoFeitos = document.getElementById("corpo-lancamentos-feitos");
-            corpoFeitos.innerHTML = "";
-
-            let filtrados = dadosLancamentos.map((l, index) => ({ ...l, originalIndex: index }))
-                                           .filter(l => (l.ano ? String(l.ano) : "2026") === anoFiltro);
-
-            if (filtrados.length === 0) {
-                corpoFeitos.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #64748b; font-style: italic;">Nenhum lançamento encontrado para ${anoFiltro}.</td></tr>`;
-                return;
-            }
-
-            filtrados.forEach(l => {
-                let tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td style="text-align: left;">${l.ano || "2026"}</td>
-                    <td style="text-align: left;">${nomesMeses[l.mes]}</td>
-                    <td style="text-align: left;">${nomesGrupos[l.grupo] || l.grupo}</td>
-                    <td style="text-align: right;">${Number(l.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
-                    <td style="text-align: center;"><button class="btn-excluir" onclick="excluirLancamento(${l.originalIndex})">Excluir</button></td>
-                `;
-                corpoFeitos.appendChild(tr);
-            });
-        }
-
-        async function excluirLancamento(index) {
-            if (confirm("Deseja realmente excluir este lançamento?")) {
-                dadosLancamentos.splice(index, 1);
-                await salvarNaNuvem();
-                atualizarInterface();
-            }
         }
 
         function montarDRE() {
@@ -349,17 +271,9 @@
         function fecharModal() {
             document.getElementById("modal-lancamento").style.display = "none";
             document.getElementById("lanc-valor").value = "";
-            document.getElementById("lanc-senha").value = "";
         }
 
         async function salvarLancamento() {
-            let senha = document.getElementById("lanc-senha").value;
-            
-            if (senha !== "0") {
-                alert("Senha incorreta! Digite '0' para confirmar o lançamento.");
-                return;
-            }
-
             let ano = document.getElementById("lanc-ano").value;
             let mes = parseInt(document.getElementById("lanc-mes").value);
             let grupo = document.getElementById("lanc-grupo").value;
