@@ -101,6 +101,7 @@
                 <option value="receita_bruta">Receita Bruta Total</option>
                 <option value="impostos">(-) Impostos sobre Vendas</option>
                 <option value="cmv">(-) Custo das Mercadorias Vendidas (CMV)</option>
+                <option value="verbas_comerciais">(+) Verbas Comerciais</option>
                 <option value="pessoal">(-) Despesas com Pessoal</option>
                 <option value="comerciais">(-) Despesas Comerciais</option>
                 <option value="administrativas">(-) Despesas Administrativas</option>
@@ -155,6 +156,7 @@
                 receita_bruta: Array(meses).fill(0),
                 impostos: Array(meses).fill(0),
                 cmv: Array(meses).fill(0),
+                verbas_comerciais: Array(meses).fill(0),
                 pessoal: Array(meses).fill(0),
                 comerciais: Array(meses).fill(0),
                 administrativas: Array(meses).fill(0)
@@ -182,6 +184,12 @@
             for(let i=0; i<12; i++) lucroBruto[i] = receitaLiquida[i] - matriz.cmv[i];
             let linhaLB = calcularLinha("(=) Lucro Bruto", lucroBruto, receitaLiquida, 'linha-resultado');
 
+            let linhaVerbas = calcularLinha("(+) Verbas Comerciais", matriz.verbas_comerciais, receitaLiquida);
+
+            let lucroBrutoAjustado = Array(12).fill(0);
+            for(let i=0; i<12; i++) lucroBrutoAjustado[i] = lucroBruto[i] + matriz.verbas_comerciais[i];
+            let linhaLBA = calcularLinha("(=) Lucro Bruto Ajustado", lucroBrutoAjustado, receitaLiquida, 'linha-resultado');
+
             let despesasTotal = Array(12).fill(0);
             for(let i=0; i<12; i++) despesasTotal[i] = matriz.pessoal[i] + matriz.comerciais[i] + matriz.administrativas[i];
             let linhaDesp = calcularLinha("(-) Despesas Operacionais Totais", despesasTotal, receitaLiquida, 'linha-principal');
@@ -190,10 +198,10 @@
             let linhaA = calcularLinha("Despesas Administrativas", matriz.administrativas, receitaLiquida, 'sub-item');
 
             let ebitda = Array(12).fill(0);
-            for(let i=0; i<12; i++) ebitda[i] = lucroBruto[i] - despesasTotal[i];
+            for(let i=0; i<12; i++) ebitda[i] = lucroBrutoAjustado[i] - despesasTotal[i];
             let linhaEbitda = calcularLinha("(=) EBITDA / Resultado Operacional", ebitda, receitaLiquida, 'linha-resultado');
 
-            tbody.innerHTML = linhaRB + linhaImp + linhaRL + linhaCMV + linhaLB + linhaDesp + linhaP + linhaC + linhaA + linhaEbitda;
+            tbody.innerHTML = linhaRB + linhaImp + linhaRL + linhaCMV + linhaLB + linhaVerbas + linhaLBA + linhaDesp + linhaP + linhaC + linhaA + linhaEbitda;
         }
 
         function calcularLinha(nome, valoresMes, baseAV, classeCss = '') {
