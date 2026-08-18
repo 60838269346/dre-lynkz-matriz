@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRE Lynkz - Nuvem</title>
+    <!-- Bibliotecas para exportar Excel e PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f6f9; color: #333; }
+        h2 { color: #1a73e8; }
+        .acoes { margin-bottom: 20px; display: flex; gap: 10px; }
+        button { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-excel { background-color: #2e7d32; color: white; }
+        .btn-pdf { background-color: #c62828; color: white; }
+        .btn-novo { background-color: #1976d2; color: white; }
+        table { width: 100%; border-collapse: collapse; background: white; margin-top: 10px; font-size: 13px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
+        th:first-child, td:first-child { text-align: left; }
+        th { background-color: #1a73e8; color: white; }
+        .total-row { font-weight: bold; background-color: #e3f2fd; }
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 400px; }
+        .modal-content input, .modal-content select { width: 100%; padding: 8px; margin: 8px 0; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+    <h2>DRE Lynkz - Departamento Único (Nuvem)</h2>
+    <p>Visão Mensal, Análise Vertical e Acumulado Anual</p>
+
+    <div class="acoes">
+        <button class="btn-novo" onclick="abrirModal()">+ Novo Lançamento</button>
+        <button class="btn-excel" onclick="baixarExcel()">Baixar Excel</button>
+        <button class="btn-pdf" onclick="baixarPDF()">Baixar PDF</button>
+    </div>
+
+    <div style="overflow-x:auto;">
+        <table id="tabela-dre">
+            <thead>
+                <tr>
+                    <th>Estrutura da DRE</th>
+                    <th>Jan</th><th>A.V.</th>
+                    <th>Fev</th><th>A.V.</th>
+                    <th>Mar</th><th>A.V.</th>
+                    <th>Abr</th><th>A.V.</th>
+                    <th>Mai</th><th>A.V.</th>
+                    <th>Jun</th><th>A.V.</th>
+                    <th>Jul</th><th>A.V.</th>
+                    <th>Ago</th><th>A.V.</th>
+                    <th>Set</th><th>A.V.</th>
+                    <th>Out</th><th>A.V.</th>
+                    <th>Nov</th><th>A.V.</th>
+                    <th>Dez</th><th>A.V.</th>
+                    <th>Acumulado</th><th>A.V. Acum.</th>
+                </tr>
+            </thead>
+            <tbody id="corpo-dre">
+                <!-- Preenchido via JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal Novo Lançamento -->
+    <div id="modal-lancamento" class="modal">
+        <div class="modal-content">
+            <h3>Adicionar Lançamento</h3>
+            <label>Mês:</label>
+            <select id="lanc-mes">
+                <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+                <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+                <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+                <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+            </select>
+            <label>Grupo / Conta:</label>
+            <select id="lanc-grupo">
+                <option value="receita_bruta">Receita Bruta Total</option>
+                <option value="impostos">(-) Impostos sobre Vendas</option>
+                <option value="cmv">(-) Custo das Mercadorias Vendidas (CMV)</option>
+                <option value="pessoal">(-) Despesas com Pessoal</option>
+                <option value="comerciais">(-) Despesas Comerciais</option>
+                <option value="administrativas">(-) Despesas Administrativas</option>
+            </select>
+            <label>Valor (R$):</label>
+            <input type="number" id="lanc-valor" step="0.01" placeholder="0.00">
+            <button class="btn-novo" onclick="salvarLancamento()">Salvar</button>
+            <button onclick="fecharModal()" style="background:#aaa; color:white; margin-top:5px;">Cancelar</button>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURAÇÃO DO JSONBIN (Cole seu Bin ID novo e sua API Key aqui)
+        const BIN_ID = "COLE_O_ID_DO_SEU_BIN_AQUI"; 
+        const API_KEY = "$2a$10$2gRuysiXM85zMZ4OTG2dU.AEaN0WyPHJveZ2wy62/tqidY73EOJBS"; 
+
+        let dadosLancamentos = [];
+
+        async function carregarDados() {
+            try {
+                let resposta = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                    headers: { "X-Master-Key": API_KEY }
+                });
+                let resultado = await resposta.json();
+                dadosLancamentos = resultado.record.lancamentos || [];
+                montarDRE();
+            } catch (erro) {
+                console.error("Erro ao carregar dados da nuvem:", erro);
+                montarDRE();
+            }
+        }
+
+        async function salvarNaNuvem() {
+            try {
+                await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-Master-Key": API_KEY
+                    },
+                    body: JSON.stringify({ lancamentos: dadosLancamentos })
+                });
+            } catch (erro) {
+                console.error("Erro ao salvar na nuvem:", erro);
+            }
+        }
+
+        function montarDRE() {
+            let meses = 12;
+            let matriz = {
+                receita_bruta: Array(meses).fill(0),
+                impostos: Array(meses).fill(0),
+                cmv: Array(meses).fill(0),
+                pessoal: Array(meses).fill(0),
+                comerciais: Array(meses).fill(0),
+                administrativas: Array(meses).fill(0)
+            };
+
+            dadosLancamentos.forEach(l => {
+                if (matriz[l.grupo] && l.mes >= 0 && l.mes < 12) {
+                    matriz[l.grupo][l.mes] += Number(l.valor);
+                }
+            });
+
+            let tbody = document.getElementById("corpo-dre");
+            tbody.innerHTML = "";
+
+            let linhaRB = calcularLinha("Receita Bruta Total", matriz.receita_bruta, matriz.receita_bruta, true);
+            let linhaImp = calcularLinha("(-) Impostos sobre Vendas", matriz.impostos, matriz.receita_bruta);
+            
+            // Receita Líquida = RB - Impostos
+            let receitaLiquida = Array(12).fill(0);
+            for(let i=0; i<12; i++) receitaLiquida[i] = matriz.receita_bruta[i] - matriz.impostos[i];
+            let linhaRL = calcularLinha("(=) Receita Líquida", receitaLiquida, receitaLiquida, true, true);
+
+            let linhaCMV = calcularLinha("(-) Custo das Mercadorias Vendidas (CMV)", matriz.cmv, receitaLiquida);
+            
+            // Lucro Bruto = RL - CMV
+            let lucroBruto = Array(12).fill(0);
+            for(let i=0; i<12; i++) lucroBruto[i] = receitaLiquida[i] - matriz.cmv[i];
+            let linhaLB = calcularLinha("(=) Lucro Bruto", lucroBruto, receitaLiquida, true, true);
+
+            // Despesas Operacionais Totais
+            let despesasTotal = Array(12).fill(0);
+            for(let i=0; i<12; i++) despesasTotal[i] = matriz.pessoal[i] + matriz.comerciais[i] + matriz.administrativas[i];
+            let linhaDesp = calcularLinha("(-) Despesas Operacionais Totais", despesasTotal, receitaLiquida);
+            let linhaP = calcularLinha("• Despesas com Pessoal", matriz.pessoal, receitaLiquida);
+            let linhaC = calcularLinha("• Despesas Comerciais", matriz.comerciais, receitaLiquida);
+            let linhaA = calcularLinha("• Despesas Administrativas", matriz.administrativas, receitaLiquida);
+
+            // EBITDA = Lucro Bruto - Despesas
+            let ebitda = Array(12).fill(0);
+            for(let i=0; i<12; i++) ebitda[i] = lucroBruto[i] - despesasTotal[i];
+            let linhaEbitda = calcularLinha("(=) EBITDA / Resultado Operacional", ebitda, receitaLiquida, true, true);
+
+            tbody.innerHTML = linhaRB + linhaImp + linhaRL + linhaCMV + linhaLB + linhaDesp + linhaP + linhaC + linhaA + linhaEbitda;
+        }
+
+        function calcularLinha(nome, valoresMes, baseAV, isTotal = false, isPrincipal = false) {
+            let html = `<tr class="${isTotal ? 'total-row' : ''}"><td><b>${nome}</b></td>`;
+            let acumulado = 0;
+            let baseAcumulada = baseAV.reduce((a,b)=>a+b, 0);
+
+            for(let i=0; i<12; i++) {
+                let val = valoresMes[i];
+                acumulado += val;
+                let av = baseAV[i] !== 0 ? (val / baseAV[i]) * 100 : 0;
+                
+                html += `<td>${val.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>`;
+                html += `<td>${av.toFixed(2)}%</td>`;
+            }
+
+            let avAcum = baseAcumulada !== 0 ? (acumulado / baseAcumulada) * 100 : 0;
+            html += `<td><b>${acumulado.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</b></td>`;
+            html += `<td><b>${avAcum.toFixed(2)}%</b></td></tr>`;
+            return html;
+        }
+
+        function abrirModal() { document.getElementById("modal-lancamento").style.display = "flex"; }
+        function fecharModal() { document.getElementById("modal-lancamento").style.display = "none"; }
+
+        async function salvarLancamento() {
+            let mes = parseInt(document.getElementById("lanc-mes").value);
+            let grupo = document.getElementById("lanc-grupo").value;
+            let valor = parseFloat(document.getElementById("lanc-valor").value) || 0;
+
+            dadosLancamentos.push({ mes, grupo, valor });
+            await salvarNaNuvem();
+            montarDRE();
+            fecharModal();
+            document.getElementById("lanc-valor").value = "";
+        }
+
+        function baixarExcel() {
+            let tabela = document.getElementById("tabela-dre");
+            let wb = XLSX.utils.table_to_book(tabela, {sheet: "DRE Lynkz"});
+            XLSX.writeFile(wb, "DRE_Lynkz.xlsx");
+        }
+
+        function baixarPDF() {
+            const { jsPDF } = window.jspdf;
+            let doc = new jsPDF('l', 'pt', 'a4');
+            doc.text("DRE Lynkz - Relatório Anual", 40, 30);
+            doc.autoTable({ html: '#tabela-dre', startY: 50, styles: { fontSize: 7 } });
+            doc.save("DRE_Lynkz.pdf");
+        }
+
+        // Carrega dados ao abrir
+        carregarDados();
+    </script>
+</body>
+</html>
