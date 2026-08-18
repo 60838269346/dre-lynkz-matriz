@@ -10,35 +10,34 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 25px; background-color: #f8fafc; color: #1e293b; }
-        
         .header-container { background: #334155; color: white; padding: 20px 25px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         h2 { margin: 0; font-size: 20px; font-weight: 600; }
         p { margin: 5px 0 0 0; color: #cbd5e1; font-size: 13px; }
-        
         .header-left { display: flex; align-items: center; gap: 20px; }
         .filtro-ano-container { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 6px; }
         .filtro-ano-container label { font-size: 13px; font-weight: 600; color: #cbd5e1; }
         .filtro-ano-container select { background: #1e293b; color: white; border: 1px solid #475569; padding: 5px 10px; border-radius: 4px; font-weight: 600; cursor: pointer; }
-
         .acoes { display: flex; gap: 10px; }
         button { padding: 9px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; transition: opacity 0.2s; }
         button:hover { opacity: 0.9; }
         .btn-novo { background-color: #475569; color: white; border: 1px solid #64748b; }
         .btn-excel { background-color: #059669; color: white; }
         .btn-pdf { background-color: #dc2626; color: white; }
-
-        .table-container { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow-x: auto; border: 1px solid #e2e8f0; }
+        .btn-excluir { background-color: #ef4444; color: white; padding: 4px 8px; font-size: 11px; }
+        .table-container { background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow-x: auto; border: 1px solid #e2e8f0; margin-bottom: 30px; }
         table { width: 100%; border-collapse: collapse; white-space: nowrap; font-size: 12px; }
         th, td { border-bottom: 1px solid #e2e8f0; border-right: 1px solid #f1f5f9; padding: 10px 12px; text-align: right; }
         th:first-child, td:first-child { text-align: left; position: sticky; left: 0; background: inherit; z-index: 1; border-right: 2px solid #e2e8f0; }
         th { background-color: #334155; color: white; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
-
-        /* Estilos das Linhas da DRE (Cinza Corporativo) */
         tr:hover td { background-color: #f8fafc; }
         .linha-principal { font-weight: bold; background-color: #f8fafc; color: #1e293b; }
         .linha-resultado { font-weight: bold; background-color: #e2e8f0; color: #1e293b; font-size: 13px; }
         .sub-item td:first-child { padding-left: 25px; color: #475569; font-style: italic; }
-
+        
+        /* Seção de Gerenciamento */
+        .painel-lancamentos { background: white; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .painel-lancamentos h3 { margin-top: 0; font-size: 16px; color: #334155; }
+        
         /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: white; padding: 25px; border-radius: 10px; width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
@@ -60,7 +59,7 @@
             </div>
             <div class="filtro-ano-container">
                 <label for="ano-selecionado">Ano:</label>
-                <select id="ano-selecionado" onchange="montarDRE()">
+                <select id="ano-selecionado" onchange="atualizarInterface()">
                     <option value="2026">2026</option>
                     <option value="2025">2025</option>
                     <option value="2024">2024</option>
@@ -71,6 +70,27 @@
             <button class="btn-novo" onclick="abrirModal()">+ Novo Lançamento</button>
             <button class="btn-excel" onclick="baixarExcel()">Baixar Excel</button>
             <button class="btn-pdf" onclick="baixarPDF()">Baixar PDF</button>
+        </div>
+    </div>
+
+    <!-- Painel para visualização e filtro dos lançamentos já feitos -->
+    <div class="painel-lancamentos">
+        <h3>Lançamentos Registrados</h3>
+        <div class="table-container" style="max-height: 250px; overflow-y: auto; margin-bottom: 0;">
+            <table id="tabela-lancamentos-feitos">
+                <thead>
+                    <tr>
+                        <th style="text-align: left;">Ano</th>
+                        <th style="text-align: left;">Mês</th>
+                        <th style="text-align: left;">Grupo / Conta</th>
+                        <th style="text-align: right;">Valor (R$)</th>
+                        <th style="text-align: center;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="corpo-lancamentos-feitos">
+                    <!-- Preenchido via JavaScript -->
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -110,6 +130,7 @@
                 <option value="2025">2025</option>
                 <option value="2024">2024</option>
             </select>
+
             <label>Mês:</label>
             <select id="lanc-mes">
                 <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
@@ -117,6 +138,7 @@
                 <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
                 <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
             </select>
+
             <label>Grupo / Conta:</label>
             <select id="lanc-grupo">
                 <option value="receita_bruta">Receita Bruta Total</option>
@@ -131,8 +153,13 @@
                 <option value="tributarias">(-) Despesas Tributárias</option>
                 <option value="alugueis">(-) Aluguéis</option>
             </select>
+
             <label>Valor (R$):</label>
             <input type="number" id="lanc-valor" step="0.01" placeholder="0.00">
+
+            <label>Senha de Autorização:</label>
+            <input type="password" id="lanc-senha" placeholder="Digite a senha (0)">
+
             <div class="modal-buttons">
                 <button class="btn-novo" onclick="salvarLancamento()" style="background-color: #334155; color: white;">Salvar</button>
                 <button class="btn-cancelar" onclick="fecharModal()">Cancelar</button>
@@ -141,10 +168,23 @@
     </div>
 
     <script>
-        const BIN_ID = "6a6a4655f5f4af5e29d25a5c"; 
-        const API_KEY = "$2a$10$2gRuysiXM85zMZ4OTG2dU.AEaN0WyPHJveZ2wy62/tqidY73EOJBS"; 
-
+        const BIN_ID = "6a6a4655f5f4af5e29d25a5c";
+        const API_KEY = "$2a$10$2gRuysiXM85zMZ4OTG2dU.AEaN0WyPHJveZ2wy62/tqidY73EOJBS";
         let dadosLancamentos = [];
+        const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        const nomesGrupos = {
+            receita_bruta: "Receita Bruta Total",
+            deducoes_receita: "(-) Deduções da Receita",
+            impostos: "(-) Impostos sobre Vendas",
+            cmv: "(-) Custo das Mercadorias Vendidas (CMV)",
+            verbas_comerciais: "(+) Verbas Comerciais",
+            pessoal: "(-) Despesas com Pessoal",
+            comerciais: "(-) Despesas Comerciais",
+            distribuicao: "(-) Despesas com Distribuição",
+            administrativas: "(-) Despesas Administrativas",
+            tributarias: "(-) Despesas Tributárias",
+            alugueis: "(-) Aluguéis"
+        };
 
         async function carregarDados() {
             try {
@@ -153,10 +193,10 @@
                 });
                 let resultado = await resposta.json();
                 dadosLancamentos = resultado.record.lancamentos || [];
-                montarDRE();
+                atualizarInterface();
             } catch (erro) {
                 console.error("Erro ao carregar dados:", erro);
-                montarDRE();
+                atualizarInterface();
             }
         }
 
@@ -172,6 +212,45 @@
                 });
             } catch (erro) {
                 console.error("Erro ao salvar:", erro);
+            }
+        }
+
+        function atualizarInterface() {
+            montarDRE();
+            montarTabelaLancamentosFeitos();
+        }
+
+        function montarTabelaLancamentosFeitos() {
+            let anoFiltro = document.getElementById("ano-selecionado").value;
+            let corpoFeitos = document.getElementById("corpo-lancamentos-feitos");
+            corpoFeitos.innerHTML = "";
+
+            let filtrados = dadosLancamentos.map((l, index) => ({ ...l, originalIndex: index }))
+                                           .filter(l => (l.ano ? String(l.ano) : "2026") === anoFiltro);
+
+            if (filtrados.length === 0) {
+                corpoFeitos.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #64748b; font-style: italic;">Nenhum lançamento encontrado para ${anoFiltro}.</td></tr>`;
+                return;
+            }
+
+            filtrados.forEach(l => {
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td style="text-align: left;">${l.ano || "2026"}</td>
+                    <td style="text-align: left;">${nomesMeses[l.mes]}</td>
+                    <td style="text-align: left;">${nomesGrupos[l.grupo] || l.grupo}</td>
+                    <td style="text-align: right;">${Number(l.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                    <td style="text-align: center;"><button class="btn-excluir" onclick="excluirLancamento(${l.originalIndex})">Excluir</button></td>
+                `;
+                corpoFeitos.appendChild(tr);
+            });
+        }
+
+        async function excluirLancamento(index) {
+            if (confirm("Deseja realmente excluir este lançamento?")) {
+                dadosLancamentos.splice(index, 1);
+                await salvarNaNuvem();
+                atualizarInterface();
             }
         }
 
@@ -193,7 +272,7 @@
             };
 
             dadosLancamentos.forEach(l => {
-                let anoLancamento = l.ano ? String(l.ano) : "2026"; // Padrão 2026 para registros antigos sem ano
+                let anoLancamento = l.ano ? String(l.ano) : "2026";
                 if (anoLancamento === anoFiltro && matriz[l.grupo] && l.mes >= 0 && l.mes < 12) {
                     matriz[l.grupo][l.mes] += Number(l.valor);
                 }
@@ -205,7 +284,7 @@
             let linhaRB = calcularLinha("Receita Bruta Total", matriz.receita_bruta, matriz.receita_bruta, 'linha-principal');
             let linhaDeducoes = calcularLinha("(-) Deduções da Receita", matriz.deducoes_receita, matriz.receita_bruta);
             let linhaImp = calcularLinha("(-) Impostos sobre Vendas", matriz.impostos, matriz.receita_bruta);
-            
+
             let receitaLiquida = Array(12).fill(0);
             for(let i=0; i<12; i++) {
                 receitaLiquida[i] = matriz.receita_bruta[i] - matriz.deducoes_receita[i] - matriz.impostos[i];
@@ -229,6 +308,7 @@
                 despesasTotal[i] = matriz.pessoal[i] + matriz.comerciais[i] + matriz.distribuicao[i] + matriz.administrativas[i] + matriz.tributarias[i] + matriz.alugueis[i];
             }
             let linhaDesp = calcularLinha("(-) Despesas Operacionais Totais", despesasTotal, receitaLiquida, 'linha-principal');
+
             let linhaP = calcularLinha("Despesas com Pessoal", matriz.pessoal, receitaLiquida, 'sub-item');
             let linhaC = calcularLinha("Despesas Comerciais", matriz.comerciais, receitaLiquida, 'sub-item');
             let linhaDist = calcularLinha("Despesas com Distribuição", matriz.distribuicao, receitaLiquida, 'sub-item');
@@ -252,7 +332,6 @@
                 let val = valoresMes[i];
                 acumulado += val;
                 let av = baseAV[i] !== 0 ? (val / baseAV[i]) * 100 : 0;
-                
                 html += `<td>${val.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>`;
                 html += `<td style="color: #64748b; font-size: 11px;">${av.toFixed(1)}%</td>`;
             }
@@ -263,10 +342,24 @@
             return html;
         }
 
-        function abrirModal() { document.getElementById("modal-lancamento").style.display = "flex"; }
-        function fecharModal() { document.getElementById("modal-lancamento").style.display = "none"; }
+        function abrirModal() {
+            document.getElementById("modal-lancamento").style.display = "flex";
+        }
+
+        function fecharModal() {
+            document.getElementById("modal-lancamento").style.display = "none";
+            document.getElementById("lanc-valor").value = "";
+            document.getElementById("lanc-senha").value = "";
+        }
 
         async function salvarLancamento() {
+            let senha = document.getElementById("lanc-senha").value;
+            
+            if (senha !== "0") {
+                alert("Senha incorreta! Digite '0' para confirmar o lançamento.");
+                return;
+            }
+
             let ano = document.getElementById("lanc-ano").value;
             let mes = parseInt(document.getElementById("lanc-mes").value);
             let grupo = document.getElementById("lanc-grupo").value;
@@ -274,9 +367,8 @@
 
             dadosLancamentos.push({ ano, mes, grupo, valor });
             await salvarNaNuvem();
-            montarDRE();
+            atualizarInterface();
             fecharModal();
-            document.getElementById("lanc-valor").value = "";
         }
 
         function baixarExcel() {
