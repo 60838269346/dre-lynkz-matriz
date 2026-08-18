@@ -92,8 +92,8 @@
     </div>
 
     <script>
-        // CONFIGURAÇÃO DO JSONBIN (Cole seu Bin ID novo e sua API Key aqui)
-        const BIN_ID = "COLE_O_ID_DO_SEU_BIN_AQUI"; 
+        // CONFIGURAÇÃO DA NUVEM (JSONBin)
+        const BIN_ID = "6a6a4655f5f4af5e29d25a5c"; 
         const API_KEY = "$2a$10$2gRuysiXM85zMZ4OTG2dU.AEaN0WyPHJveZ2wy62/tqidY73EOJBS"; 
 
         let dadosLancamentos = [];
@@ -150,19 +150,16 @@
             let linhaRB = calcularLinha("Receita Bruta Total", matriz.receita_bruta, matriz.receita_bruta, true);
             let linhaImp = calcularLinha("(-) Impostos sobre Vendas", matriz.impostos, matriz.receita_bruta);
             
-            // Receita Líquida = RB - Impostos
             let receitaLiquida = Array(12).fill(0);
             for(let i=0; i<12; i++) receitaLiquida[i] = matriz.receita_bruta[i] - matriz.impostos[i];
             let linhaRL = calcularLinha("(=) Receita Líquida", receitaLiquida, receitaLiquida, true, true);
 
             let linhaCMV = calcularLinha("(-) Custo das Mercadorias Vendidas (CMV)", matriz.cmv, receitaLiquida);
             
-            // Lucro Bruto = RL - CMV
             let lucroBruto = Array(12).fill(0);
             for(let i=0; i<12; i++) lucroBruto[i] = receitaLiquida[i] - matriz.cmv[i];
             let linhaLB = calcularLinha("(=) Lucro Bruto", lucroBruto, receitaLiquida, true, true);
 
-            // Despesas Operacionais Totais
             let despesasTotal = Array(12).fill(0);
             for(let i=0; i<12; i++) despesasTotal[i] = matriz.pessoal[i] + matriz.comerciais[i] + matriz.administrativas[i];
             let linhaDesp = calcularLinha("(-) Despesas Operacionais Totais", despesasTotal, receitaLiquida);
@@ -170,7 +167,6 @@
             let linhaC = calcularLinha("• Despesas Comerciais", matriz.comerciais, receitaLiquida);
             let linhaA = calcularLinha("• Despesas Administrativas", matriz.administrativas, receitaLiquida);
 
-            // EBITDA = Lucro Bruto - Despesas
             let ebitda = Array(12).fill(0);
             for(let i=0; i<12; i++) ebitda[i] = lucroBruto[i] - despesasTotal[i];
             let linhaEbitda = calcularLinha("(=) EBITDA / Resultado Operacional", ebitda, receitaLiquida, true, true);
@@ -227,8 +223,9 @@
             doc.save("DRE_Lynkz.pdf");
         }
 
-        // Carrega dados ao abrir
         carregarDados();
     </script>
 </body>
 </html>
+
+    
